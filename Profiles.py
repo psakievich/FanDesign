@@ -9,16 +9,14 @@ Class for storing AxialProfile that can translate between
 XFOIL and python through a labeled coordinate file
 """
 import numpy as np
-"""
-FUNCTIONS
-    NORMALIZE
-    
+"""    
 """
 class AxialProfile:
     def __init__(self):
         self.cartesian=True
         self.points=np.zeros((3,20))
         self.name='DEFAULT'
+        self.fileExtension='.dat'
     def Read(self,fName):
         f=open(fName,'r')
         #Get number of points
@@ -42,7 +40,7 @@ class AxialProfile:
         f.close()
     def WriteXfoil(self):
         self.Normalize()
-        f=open(self.name+'.dat','w')
+        f=open(self.name+self.fileExtension,'w')
         def WriteLine(val):
             f.write(val+'\n')
         WriteLine(self.name)

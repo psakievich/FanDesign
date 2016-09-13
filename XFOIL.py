@@ -28,7 +28,10 @@ class XFOIL:
             #ps.wait()
             if (self.verbose):
                 print(cmd)
-        StdCmd('NACA '+str(self.naca))
+        if(self.fromFile):
+            StdCmd('LOAD '+self.infile)
+        else:
+            StdCmd('NACA '+str(self.naca))
         StdCmd('OPER')
         StdCmd('ITER '+str(self.iterations))
         StdCmd('VISC '+str(self.reynolds))
@@ -53,7 +56,10 @@ class XFOIL:
             #ps.wait()
             if (self.verbose):
                 print(cmd)
-        StdCmd('NACA '+str(self.naca))
+        if(self.fromFile):
+            StdCmd('LOAD '+self.infile)
+        else:
+            StdCmd('NACA '+str(self.naca))
         StdCmd('OPER')
         StdCmd('ITER '+str(self.iterations))
         StdCmd('VISC '+str(self.reynolds))
