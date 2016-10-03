@@ -9,6 +9,7 @@ Class for storing AxialProfile that can translate between
 XFOIL and python through a labeled coordinate file
 """
 import numpy as np
+#from matplotlib import pyplot as plt
 """    
 """
 class AxialProfile:
@@ -17,6 +18,16 @@ class AxialProfile:
         self.points=np.zeros((3,20))
         self.name='DEFAULT'
         self.fileExtension='.dat'
+        self.chord=1.0
+        self.angle=0.0
+    def Copy(self):
+        you=AxialProfile()
+        you.name=self.name
+        you.cartesian=self.cartesian
+        you.points=self.points.copy()
+        you.fileExtension=self.fileExtension
+        you.angle=self.angle
+        return you
     def Read(self,fName):
         f=open(fName,'r')
         #Get number of points
@@ -34,26 +45,69 @@ class AxialProfile:
             else:
                 line=line.strip()
                 columns=line.split()
-                self.points[0,i]=float(columns[0])
-                self.points[1,i]=float(columns[1])
+                self.points[0][i]=float(columns[0])
+                self.points[1][i]=float(columns[1])
             i=i+1
         f.close()
-    def WriteXfoil(self):
-        self.Normalize()
+    def Write(self):
         f=open(self.name+self.fileExtension,'w')
         def WriteLine(val):
             f.write(val+'\n')
         WriteLine(self.name)
         shape=self.points.shape
         for i in range(shape[1]):
-            WriteLine(str(self.points[0,i])+', '+str(self.points[1,i]))
+            WriteLine(str(self.points[0,i])+'  '+str(self.points[1,i])+'  '+
+            str(self.points[2,i]))
         f.close()
-    #Normalize profile so chord lenght =1.0
+    def WriteToOpenFile(self,f):
+        def WriteLine(val):
+            f.write(val+'\n')
+        shape=self.points.shape
+        for i in range(shape[1]):
+            WriteLine(str(self.points[0,i])+'  '+str(self.points[1,i])+'  '+
+            str(self.points[2,i]))
+    def WriteXfoil(self):
+        temp=self.Copy()
+        #temp.Normalize()
+        f=open(temp.name+'XF'+temp.fileExtension,'w')
+        def WriteLine(val):
+            f.write(val+'\n')
+        WriteLine(temp.name)
+        shape=temp.points.shape
+        for i in range(shape[1]):
+            WriteLine(str(temp.points[0,i])+'  '+str(temp.points[1,i]))
+        f.close()
+    #Normalize profile by chord length =1.0
     def Normalize(self):
-        rnge=self.points.shape
-        mx=np.amax(self.points[0,0:rnge[1]])
-        mn=np.amin(self.points[0,0:rnge[1]])
-        chord=mx-mn
-        self.points=self.points/chord
+        self.points=self.points/self.chord
+    def Scale(self,xS,yS=1.0,zS=1.0):
+        self.points[0][:]=self.points[0][:]*xS
+        self.points[1][:]=self.points[1][:]*yS
+        self.points[2][:]=self.points[2][:]*zS
+    #shift profile in space
+    def Shift(self,xC,yC=0.0,zC=0.0):
+        self.points[0][:]=self.points[0][:]+xC
+        self.points[1][:]=self.points[1][:]+yC
+        self.points[2][:]=self.points[2][:]+zC
+    #Rotate profile about point (xC,yC) by angle (degrees)
+    #Rotation is only performed in xy plane
+    def Rotate(self,angle,xC=0.0,yC=0.0):
+        self.angle=angle
+        angRad=angle*np.pi/180.0
+        #shift points
+        self.points[0][:]=self.points[0][:]-xC
+        self.points[1][:]=self.points[1][:]-yC
+        temp=self.points.copy()
+        #rotate
+        self.points[0][:]=temp[0][:]*np.cos(angRad)-temp[1][:]*np.sin(angRad)
+        self.points[1][:]=temp[0][:]*np.sin(angRad)+temp[1][:]*np.cos(angRad)
+        #shift back
+        self.points[0][:]=self.points[0][:]+xC
+        self.points[1][:]=self.points[1][:]+yC    
+    def P2dToC3d(self,radius):
+        self.points[2][:]=self.points[1][:]
+        self.points[1][:]=self.points[0][:]/radius
+        self.points[0][:]=radius
+        self.cartesian=False
         
-        
+    

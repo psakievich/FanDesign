@@ -5,7 +5,7 @@ Created on Mon Aug 29 12:44:44 2016
 @author: psakievich
 """
 import subprocess as sp
-
+import numpy as np
 #Class for running XFOIL in Python
 class XFOIL:
     #set default constructor
@@ -75,4 +75,26 @@ class XFOIL:
         StdCmd('PACC')
         StdCmd(' ')
         StdCmd('QUIT ')
-        ps.communicate()
+        ps.communicate()  
+        
+def ReadPACC(fName):
+    f=open(fName,'r')
+    i=0
+    for line in f:
+        i=i+1
+    NumPnts=i-12
+    PACC=np.zeros([7,NumPnts])
+    f.seek(0)
+    i=0
+    j=0
+    for line in f:
+        if(i<12):
+            pass
+        else:
+            data=line.strip().split()
+            for k in range(7):
+                PACC[k,j]=float(data[k])
+            j=j+1
+        i=i+1
+    f.close()
+    return PACC
