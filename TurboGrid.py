@@ -34,23 +34,34 @@ class Profile:
             f.write('\n')
             f.close()
     def _WriteCap(self,profile,inPoints,outPoints,syntax):
-        f=open(self.fileName+syntax+self.__fileExtension,'w')
-        #write inflow points
-        for i in range(int(inPoints.shape[0])):
-            f.write('{},{},{}\n'.format(inPoints[i,0],inPoints[i,1],
-                    inPoints[i,2]))                    
-        j=profile.points.shape[1]
         cSize=int(profile.points.shape[1]/2)
-        camber=np.zeros(3)
-        #write camberline
-        for i in range(cSize):
+        pSize=int(profile.points.shape[1])
+        camber=np.zeros([3,cSize])
+        #create camberline
+        j=cSize-1
+        k=0
+        for i in range(cSize,pSize):
+            camber[:,k]=0.5*(profile.points[:,i]+profile.points[:,j])
             j=j-1
-            camber=0.5*(profile.points[:,i]+profile.points[:,j])
-            f.write('{},{},{}\n'.format(camber[0],camber[1],camber[2]))
-        #write outflow points
-        for i in range(int(outPoints.shape[0])):
-            f.write('{},{},{}\n'.format(outPoints[i,0],outPoints[i,1],
-                    outPoints[i,2]))
+            k=k+1
+        #writedata    
+        f=open(self.fileName+syntax+self.__fileExtension,'w')
+        if(type(inPoints)==type(float())):
+            f.write('{},{},{}\n'.format(camber[0,0],camber[1,0],
+                    float(camber[2,0]-inPoints)))
+        else:
+            for i in range(int(inPoints.shape[1])):
+                f.write('{},{},{}\n'.format(inPoints[0,i],inPoints[1,i],
+                        inPoints[2,i]))
+        for i in range(cSize):
+            f.write('{},{},{}\n'.format(camber[0,i],camber[1,i],camber[2,i]))
+        if(type(outPoints)==type(float())):
+            f.write('{},{},{}\n'.format(camber[0,cSize-1],camber[1,cSize-1],
+                    float(camber[2,cSize-1]+outPoints)))
+        else:
+            for i in range(int(outPoints.shape[1])):
+                f.write('{},{},{}\n'.format(outPoints[0,i],outPoints[1,i],
+                        outPoints[2,i]))
         f.close()
     def WriteHub(self,profile,inPoints,outPoints):
         self._WriteCap(profile,inPoints,outPoints,'_hub')
