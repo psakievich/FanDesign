@@ -63,12 +63,11 @@ class AxialProfile:
         def WriteLine(val):
             f.write(val+'\n')
         shape=self.points.shape
-        for i in range(shape[1]):
+        for i in range(shape[1]-1):
             WriteLine(str(self.points[0,i])+'  '+str(self.points[1,i])+'  '+
             str(self.points[2,i]))
     def WriteXfoil(self):
         temp=self.Copy()
-        #temp.Normalize()
         f=open(temp.name+'XF'+temp.fileExtension,'w')
         def WriteLine(val):
             f.write(val+'\n')
@@ -77,9 +76,6 @@ class AxialProfile:
         for i in range(shape[1]):
             WriteLine(str(temp.points[0,i])+'  '+str(temp.points[1,i]))
         f.close()
-    #Normalize profile by chord length =1.0
-    def Normalize(self):
-        self.points=self.points/self.chord
     def Scale(self,xS,yS=1.0,zS=1.0):
         self.points[0][:]=self.points[0][:]*xS
         self.points[1][:]=self.points[1][:]*yS
@@ -89,11 +85,11 @@ class AxialProfile:
         self.points[0][:]=self.points[0][:]+xC
         self.points[1][:]=self.points[1][:]+yC
         self.points[2][:]=self.points[2][:]+zC
-    #Rotate profile about point (xC,yC) by angle (degrees)
+    #Rotate profile about point (xC,yC) by angle (radians)
     #Rotation is only performed in xy plane
     def Rotate(self,angle,xC=0.0,yC=0.0):
         self.angle=angle
-        angRad=angle*np.pi/180.0
+        angRad=angle#*np.pi/180.0
         #shift points
         self.points[0][:]=self.points[0][:]-xC
         self.points[1][:]=self.points[1][:]-yC

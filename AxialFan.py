@@ -78,6 +78,7 @@ class AxialFan:
         print('-'*75)
         print('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={}'.format( \
             self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB))
+        print('BPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
         print('vA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))
         print('{:<20} {}'.format('Is hub big enough?',bTests[0]))
@@ -108,7 +109,7 @@ class AxialFan:
         if(os.path.isdir('work')==False):
             os.mkdir('work')
         temp=Airfoil.name
-        Airfoil.name='./work/'+temp
+        Airfoil.name='./work/'+temp+str(i)
         Airfoil.WriteXfoil()
         Calc=XF.XFOIL()
         Calc.reynolds=self.__re[i]
@@ -150,7 +151,8 @@ class AxialFan:
         f.write('-'*75+'\n')
         f.write('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={}'.format( \
             self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB))
-        f.write('vA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
+        f.write('\nBPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
+        f.write('\nvA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))
         f.write('\n{:<20} {}'.format('Is hub big enough?',bTests[0]))
         f.write('\n{:<20} {}'.format('Is OD big enough?',bTests[1]))
