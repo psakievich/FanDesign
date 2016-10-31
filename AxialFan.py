@@ -78,8 +78,8 @@ class AxialFan:
         print('Coded by: Phil Sakievich')
         print('Last Update: 10/3/2016')
         print('-'*75)
-        print('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={}'.format( \
-            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB))
+        print('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nNumProfiles={}'.format( \
+            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,self.__numProfiles))
         print('BPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
         print('vA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))
@@ -154,8 +154,8 @@ class AxialFan:
         f.write('Coded by: Phil Sakievich\n')
         f.write('Last Update: 10/3/2016\n')
         f.write('-'*75+'\n')
-        f.write('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={}'.format( \
-            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB))
+        f.write('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nNumProfiles={}'.format( \
+            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,self.__numProfiles))
         f.write('\nBPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
         f.write('\nvA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))
@@ -178,7 +178,7 @@ class AxialFan:
         f.write('\n \nAngles(degrees):')
         f.write('\n'+'-'*75)
         f.write('\n{:>12} {:>12} {:>12} {:>12} {:>12} {:>12}'.format('Radius(in)', \
-        'Alpha','Beta','Delta','CL'))
+        'Alpha','Beta','Delta','CL','CD'))
         for i in range(self.__r.shape[0]):
             f.write('\n{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
                 format(self.__r[i],self.__alpha[i]*r2d,self.__beta[i]*r2d,

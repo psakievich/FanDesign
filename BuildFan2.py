@@ -22,15 +22,20 @@ SP=2.0
 HubDiameter=2.5
 TipDiameter=4.69
 NumberOfBlades=11
+VariableChordLength=False
+FanStatorClearance=0.5
+FanInletDomainLength=0.25
+StatorOutletDomainLength=0.25
 StatorChord=0.75
 StatorThickness=0.075
 NumberOfStatorVanes=13
 NumberOfCrossSections=10
 AirfoilFile='testProfile.txt'
 AirfoilName='test'
+SummaryFile='AreaOptimization'
 XfoilPath=r'C:\Users\psakievich\Desktop\XFOIL6.99\xfoil.exe'
 alphaMin=-1.0
-alphaMax=7.0
+alphaMax=8.0
 alphaInc=0.5
 '''
 ------------------------------------------------------------------------------
@@ -63,16 +68,18 @@ me=AF.AxialFan(HubDiameter, \
                SP, \
                NumberOfBlades)
 radius=me.GetRadius()
+beta=me.GetBeta()
 chord=me.GetChord()
-
 #Modify chord length
-for i in range(radius.shape[0]):
+for i in range(NumberOfCrossSections):
     profs.append(wing.Copy())
-    if(i>0):
-        ratio=3.4*2.0*radius[i]/NumberOfBlades
-        me.SetChordOfProfile(ratio,i)
+if(VariableChordLength):
+    for i in range(NumberOfCrossSections):
+        #try to maximize azimuthal area for each cross section
+        NewChord=np.pi*2.0*radius[i]/NumberOfBlades/np.cos(beta[i])
+        me.SetChordOfProfile(NewChord,i)
         #keep chord length of unity for alpha calculation, but rescale thickness
-        profs[i].Scale(1.0,chord[0]/ratio)
+        profs[i].Scale(1.0,chord[i]/NewChord)
 #Set flow parameters        
 me.SetCl()
 me.SetReynolds()
@@ -83,14 +90,35 @@ chord=me.GetChord()
 for i in range(NumberOfCrossSections):
     me.SetAlpha(profs[i],i,aMin=alphaMin,aMax=alphaMax,inc=alphaInc, \
                 xFoilPath=XfoilPath)
+alpha=me.GetAlpha()
 #Out put Fan results
 me.PrintProperties()
-me.WriteProperties('FanDesigned.txt')
+me.WriteProperties(SummaryFile+'1.txt')
+if(VariableChordLength):
+    #Adjust chord length for alpha's
+    for i in range(NumberOfCrossSections):
+        #try to maximize azimuthal area for each cross section
+        NewChord=np.pi*2.0*radius[i]/NumberOfBlades/np.cos(beta[i]+alpha[i])
+        me.SetChordOfProfile(NewChord,i)
+        #keep chord length of unity for alpha calculation, but rescale thickness
+        profs[i].Scale(1.0,chord[i]/NewChord)
+    #Set flow parameters        
+    me.SetCl()
+    me.SetReynolds()
+    me.SetMach()
+    chord=me.GetChord()
+
+    #Calculate angle of attack for desired Coefficient of lift
+    for i in range(NumberOfCrossSections):
+        me.SetAlpha(profs[i],i,aMin=alphaMin,aMax=alphaMax,inc=alphaInc/2, \
+                    xFoilPath=XfoilPath)
+    #Out put Fan results
+    me.PrintProperties()
+    me.WriteProperties(SummaryFile+'2.txt')
 
 #write results to turbogrid files and plot blade profiles in 
 #cartesian coordinates
 alpha=me.GetAlpha()
-beta=me.GetBeta()
 delta=me.GetDelta()
 
 fig = plt.figure()
@@ -105,11 +133,11 @@ for i in range(NumberOfCrossSections):
     if(i==0):
         inPoint=0.25
         outPoint=0.25
-        writer.WriteHub(profs[i],inPoint,outPoint)
-        writer2.WriteHub(stator,inPoint,outPoint)
+        writer.WriteHub(profs[i],FanInletDomainLength,FanStatorClearance/2)
+        writer2.WriteHub(stator,FanStatorClearance/2,StatorOutletDomainLength)
     if(i==9):
-        writer.WriteShroud(profs[i],inPoint,outPoint)
-        writer2.WriteShroud(stator,inPoint,outPoint)
+        writer.WriteShroud(profs[i],FanInletDomainLength,FanStatorClearance/2)
+        writer2.WriteShroud(stator,FanStatorClearance/2,StatorOutletDomainLength)
     pnts=profs[i].points
     profs[i].points[0]=pnts[0]*np.cos(pnts[1])
     profs[i].points[1]=pnts[0]*np.sin(pnts[1])
