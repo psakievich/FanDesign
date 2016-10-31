@@ -41,9 +41,11 @@ class AxialFan:
         self.__l=NP.empty(n)
         self.__alpha=NP.empty(n)
         self.__cl=NP.empty(n)
+        self.__cd=NP.empty(n)
         self.__l.fill(None)
         self.__alpha.fill(None)
         self.__cl.fill(None)
+        self.__cd.fill(None)
         self.__r=NP.linspace(0.5*self.__dHub,0.5*self.__dTip,n)
         self.__vR=233.0*10.0**5/self.__RPM*self.__SP/self.__r
         self.__vB=self.__RPM*2.0*NP.pi/12.0*self.__r
@@ -99,12 +101,12 @@ class AxialFan:
                   self.__l[i],self.__re[i],self.__mach[i]))
         print('\nAngles(degrees):')
         print('-'*75)
-        print('{:>12} {:>12} {:>12} {:>12} {:>12}'.format('Radius(in)','Alpha', \
-              'Beta','Delta','CL'))
+        print('{:>12} {:>12} {:>12} {:>12} {:>12} {:>12}'.format('Radius(in)', \
+        'Alpha','Beta','Delta','CL','CD'))
         for i in range(self.__r.shape[0]):
-            print('{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
+            print('{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
                 format(self.__r[i],self.__alpha[i]*r2d,self.__beta[i]*r2d,
-                       self.__delta[i]*r2d,self.__cl[i]))
+                       self.__delta[i]*r2d,self.__cl[i],self.__cd[i]))
     def SetAlpha(self,Airfoil,i,aMin=-10.0,aMax=10.0,inc=0.5,xFoilPath=None):
         if(os.path.isdir('work')==False):
             os.mkdir('work')
@@ -126,6 +128,7 @@ class AxialFan:
         Calc.RunAlpha(aMin,aMax,inc,True)
         Result=XF.ReadPACC(Calc.outfile+Calc.fileExtension)
         self.__alpha[i]=NP.interp(self.__cl[i],Result[1],Result[0])*NP.pi/180.0
+        self.__cd[i]=NP.interp(self.__cl[i],Result[1],Result[2])
     def GetAlpha(self):
         return self.__alpha.copy()
     def GetBeta(self):
@@ -174,9 +177,9 @@ class AxialFan:
                   self.__l[i],self.__re[i],self.__mach[i]))
         f.write('\n \nAngles(degrees):')
         f.write('\n'+'-'*75)
-        f.write('\n{:>12} {:>12} {:>12} {:>12} {:>12}'.format('Radius(in)','Alpha', \
-              'Beta','Delta','CL'))
+        f.write('\n{:>12} {:>12} {:>12} {:>12} {:>12} {:>12}'.format('Radius(in)', \
+        'Alpha','Beta','Delta','CL'))
         for i in range(self.__r.shape[0]):
-            f.write('\n{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
+            f.write('\n{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
                 format(self.__r[i],self.__alpha[i]*r2d,self.__beta[i]*r2d,
-                       self.__delta[i]*r2d,self.__cl[i]))
+                       self.__delta[i]*r2d,self.__cl[i],self.__cd[i]))

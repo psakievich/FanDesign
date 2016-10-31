@@ -63,7 +63,6 @@ me=AF.AxialFan(HubDiameter, \
                SP, \
                NumberOfBlades)
 radius=me.GetRadius()
-ratio=radius[1]/radius[0]
 chord=me.GetChord()
 
 #Modify chord length
@@ -72,6 +71,7 @@ for i in range(radius.shape[0]):
     if(i>0):
         ratio=3.4*2.0*radius[i]/NumberOfBlades
         me.SetChordOfProfile(ratio,i)
+        #keep chord length of unity for alpha calculation, but rescale thickness
         profs[i].Scale(1.0,chord[0]/ratio)
 #Set flow parameters        
 me.SetCl()
