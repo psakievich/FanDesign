@@ -58,7 +58,7 @@ class AxialFan:
         self.__cl=self.__SP/(self.__RPM*self.__zB*self.__l* \
             self.__w*3.43*10.0**-9)
     def SetReynolds(self):
-        self.__re=self.__w*self.__l/self.__nu/12.0
+        self.__re=self.__w*self.__l/self.__nu/12.0#chord is in inches, other lengths are feet
     def SetMach(self):
         self.__mach=self.__w/self.__c
     def CheckDimensions(self):
@@ -105,13 +105,15 @@ class AxialFan:
             print('{:12.4f} {:12.4f} {:12.4f} {:12.4f} {:12.4f}'. \
                 format(self.__r[i],self.__alpha[i]*r2d,self.__beta[i]*r2d,
                        self.__delta[i]*r2d,self.__cl[i]))
-    def SetAlpha(self,Airfoil,i,aMin=-10.0,aMax=10.0,inc=0.5):
+    def SetAlpha(self,Airfoil,i,aMin=-10.0,aMax=10.0,inc=0.5,xFoilPath=None):
         if(os.path.isdir('work')==False):
             os.mkdir('work')
         temp=Airfoil.name
         Airfoil.name='./work/'+temp+str(i)
         Airfoil.WriteXfoil()
         Calc=XF.XFOIL()
+        if(xFoilPath is not None):
+            Calc.xFoilPath=xFoilPath
         Calc.reynolds=self.__re[i]
         Calc.mach=self.__mach[i]
         Calc.verbose=False

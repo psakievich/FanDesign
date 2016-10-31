@@ -18,21 +18,17 @@ class Profile:
         self.__numProfiles=nProfiles
         self.__percentages=np.linspace(0,100,self.__numProfiles)
     def AddProfile(self,profile):
-        if(type(profile)!=pf.AxialProfile):
-            print('ERROR::YOU MUST PASS A PROFILE OBJECT\n')
-            pass
+        if(self.__opened):
+            f=open(self.fileName+'_profile'+self.__fileExtension,'a')
         else:
-            if(self.__opened):
-                f=open(self.fileName+'_profile'+self.__fileExtension,'a')
-            else:
-                f=open(self.fileName+'_profile'+self.__fileExtension,'w')
-                self.__opened=True
-            f.write('# Profile {} at {}%\n'.format(self.__currentProfile+1,
-                    self.__percentages[self.__currentProfile]))
-            self.__currentProfile=self.__currentProfile+1
-            profile.WriteToOpenFile(f)
-            f.write('\n')
-            f.close()
+            f=open(self.fileName+'_profile'+self.__fileExtension,'w')
+            self.__opened=True
+        f.write('# Profile {} at {}%\n'.format(self.__currentProfile+1,
+                self.__percentages[self.__currentProfile]))
+        self.__currentProfile=self.__currentProfile+1
+        profile.WriteToOpenFile(f)
+        f.write('\n')
+        f.close()
     def _WriteCap(self,profile,inPoints,outPoints,syntax):
         cSize=int(profile.points.shape[1]/2)
         pSize=int(profile.points.shape[1])
