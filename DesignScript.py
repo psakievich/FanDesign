@@ -11,18 +11,19 @@ import numpy as np
 import TurboGrid as TG
 from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+
 '''
 ------------------------------------------------------------------------------
 USER INPUT START
 ------------------------------------------------------------------------------
 '''
-RPM=11000.0
-CFM=450
-SP=2.0
-HubDiameter=2.5
-TipDiameter=4.69
-NumberOfBlades=11
-VariableChordLength=False
+RPM=23000.0
+CFM=500
+SP=8.0
+HubDiameter=3.2
+TipDiameter=4.2
+NumberOfBlades=21
+VariableChordLength=True
 FanStatorClearance=0.5
 FanInletDomainLength=0.25
 StatorOutletDomainLength=0.25
@@ -34,8 +35,8 @@ AirfoilFile='testProfile.txt'
 AirfoilName='test'
 SummaryFile='AreaOptimization'
 XfoilPath=r'C:\Users\psakievich\Desktop\XFOIL6.99\xfoil.exe'
-alphaMin=-1.0
-alphaMax=8.0
+alphaMin=-2.0
+alphaMax=0.0
 alphaInc=0.5
 '''
 ------------------------------------------------------------------------------
@@ -121,8 +122,6 @@ if(VariableChordLength):
 alpha=me.GetAlpha()
 delta=me.GetDelta()
 
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
 for i in range(NumberOfCrossSections):
     profs[i].Scale(chord[i],chord[i])
     profs[i].Rotate(np.pi-alpha[i]-beta[i])
@@ -141,5 +140,19 @@ for i in range(NumberOfCrossSections):
     pnts=profs[i].points
     profs[i].points[0]=pnts[0]*np.cos(pnts[1])
     profs[i].points[1]=pnts[0]*np.sin(pnts[1])
-    ax.scatter(profs[i].points[0],profs[i].points[1],profs[i].points[2])
-plt.show()
+
+
+def PlotBlade(eliv,azimuth):
+    fig=plt.figure()
+    ax=fig.add_subplot(111,projection='3d')
+    for i in range(NumberOfCrossSections):
+        ax.scatter(profs[i].points[0],profs[i].points[1],profs[i].points[2])
+    ax.view_init(eliv,azimuth)
+    plt.show()
+    
+import platform
+if(platform.system()=='Windows'):
+    import winsound
+    def PlayBPF(duration):
+        winsound.Beep(int(NumberOfBlades*RPM/60),duration)
+        

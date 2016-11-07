@@ -9,7 +9,8 @@ Class for storing AxialProfile that can translate between
 XFOIL and python through a labeled coordinate file
 """
 import numpy as np
-#from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 """    
 """
 class Profile:
@@ -38,6 +39,17 @@ class Profile:
             WriteLine(str(self.points[0,i])+'  '+str(self.points[1,i])+'  '+
             str(self.points[2,i]))
         f.close()
+    def Plot(self,eliv=90,azim=90):
+        fig=plt.figure()
+        ax=fig.add_subplot(111,projection='3d')
+        ax.scatter(self.points[0,:],self.points[1,:],self.points[2,:])
+        ax.view_init(eliv,azim)
+        plt.show()
+    def Plot2D(self):
+        plt.plot(self.points[0,:],self.points[1,:])
+        plt.axis('equal')
+        plt.show()
+        
     def WriteToOpenFile(self,f):
         def WriteLine(val):
             f.write(val+'\n')
@@ -215,7 +227,100 @@ class Stator(Profile):
         self.points[0,:]=radius
         self.points[1,:]=self.points[1,:]*cLength/radius+self.shift*(radius-self.dHub)
         self.points[2,:]=-self.points[2,:]*self.chord/2
-        
-        
-        
+'''
+Modified from source code provided by dkedelty on 11/07/2016
+'''       
+def NACAGenerator(NACA,Name,NumPoints=100,PercentRound=0.95):        
+    if(NumPoints%2!=0):
+        print('ERROR: Output profile requires an even number of points\n')
+        return
+    if(PercentRound>1.0 or PercentRound<0.0):
+        print('ERROR: 0<PercentRound<1 violated\n')
+        return
+    c=1000.0 #chord length is always normalized to 1
+    naca=str(NACA)
+    if(len(naca)!=4):
+        print('ERROR: Only 4 digit NACA profiles are currently supported\n')
+        return
+    m=int(naca[0])*0.01 #maximum camber
+    p=int(naca[1])*0.1 #fraction of chord where max camber is located
+    t=int(naca[2:4])*0.01 #fraction of chord for thickness
+    r=PercentRound #fraction of chord that is kept anything after r/c is rounded
+    nPoints=int(NumPoints/2)+1    
+    '''
+    first part of camberline (x<=pc)
+    '''
+    def yc_1(x):
+        return m*x/p**2*(2*p-x/c)
+    '''
+    second part of camberline (x>pc)
+    '''
+    def yc_2(x):
+        return m*(c-x)/(1-p)**2*(1+x/c-2*p)
+    '''
+    derivative of yc_1
+    '''
+    def d_yc_1(x):
+        return (2*m/p**2)*(p-x/c)
+    '''
+    derivative of yc_2
+    '''
+    def d_yc_2(x):
+        return (2*m/(1-p)**2)*(p-x/c)
+    '''
+    Airfoil thickness
+    '''
+    def y_t(x):
+        return 5.0*t*c*(0.2969*np.sqrt(x/c)+(-0.1260)*(x/c)+(-0.3516)*(x/c)**2+ \
+                      0.2843*(x/c)**3+(-0.1036)*(x/c)**4)
+    #calculate the grid using clustering at leading and trailing edges
+    x=np.zeros(nPoints)
+    a=0.0
+    b=r*c+y_t(r*c)
+    for i in range(nPoints):
+        x[i]=0.5*(a+b)+0.5*(b-a)*np.cos(i/(nPoints-1)*np.pi)
+    #allocate storage for upper and lower surfaces
+    x_l=np.zeros(nPoints)
+    y_l=np.zeros(nPoints)
+    x_u=np.zeros(nPoints)
+    y_u=np.zeros(nPoints)
+    
+    for i in range(nPoints):
+        if(0.0<=x[i] and x[i]<=p*c):
+            #front of airfoil
+            theta=np.arctan(d_yc_1(x[i]))
+            x_u[i]=x[i]-y_t(x[i])*np.sin(theta)
+            y_u[i]=yc_1(x[i])+y_t(x[i])*np.cos(theta)
+            x_l[i]=x[i]+y_t(x[i])*np.sin(theta)
+            y_l[i]=yc_1(x[i])-y_t(x[i])*np.cos(theta)
+        elif(p*c<x[i] and x[i]<=r*c):
+            theta=np.arctan(d_yc_2(x[i]))
+            x_u[i]=x[i]-y_t(x[i])*np.sin(theta)
+            y_u[i]=yc_2(x[i])+y_t(x[i])*np.cos(theta)
+            x_l[i]=x[i]+y_t(x[i])*np.sin(theta)
+            y_l[i]=yc_2(x[i])-y_t(x[i])*np.cos(theta)
+        elif(r*c<x[i] and x[i]<=c):
+            theta=np.arctan(d_yc_2(x[i]))
+            rad=y_t(r*c)
+            def y_t_blend(x):
+                return np.sqrt(rad**2-(x-r*c)**2)
+            x_u[i]=x[i]-y_t_blend(x[i])*np.sin(theta)
+            y_u[i]=yc_2(x[i])+y_t_blend(x[i])*np.cos(theta)
+            x_l[i]=x[i]+y_t_blend(x[i])*np.sin(theta)
+            y_l[i]=yc_2(x[i])-y_t_blend(x[i])*np.cos(theta)
+    #remove imaginary components
+    x_l=np.real(x_l[::-1])
+    x_u=np.real(x_u)
+    y_l=np.real(y_l[::-1])
+    y_u=np.real(y_u)
+    
+    profile=AxialProfile()
+    profile.name=Name
+    profile.points=np.zeros([3,NumPoints])
+    profile.points[0,:]=np.concatenate([x_u,x_l[1:nPoints-1]])
+    profile.points[1,:]=np.concatenate([y_u,y_l[1:nPoints-1]])
+    scale=np.max(profile.points[0,:])-np.min(profile.points[0,:])
+    profile.Scale(1.0/scale,1.0/scale)
+    profile.Shift(-np.min(profile.points[0,:]))
+    return profile
         
