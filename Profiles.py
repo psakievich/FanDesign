@@ -230,7 +230,7 @@ class Stator(Profile):
 '''
 Modified from source code provided by dkedelty on 11/07/2016
 '''       
-def NACAGenerator(NACA,Name,NumPoints=100,PercentRound=0.95):        
+def NacaGen(NACA,Name,NumPoints=100,PercentRound=0.95):        
     if(NumPoints%2!=0):
         print('ERROR: Output profile requires an even number of points\n')
         return
