@@ -19,11 +19,11 @@ USER INPUT START
 '''
 RPM=23000.0
 CFM=500
-SP=8.0
+SP=10.0
 HubDiameter=3.2
 TipDiameter=4.2
 NumberOfBlades=11
-VariableChordLength=True
+VariableChordLength=False
 FanStatorClearance=0.5
 FanInletDomainLength=0.25
 StatorOutletDomainLength=0.25
@@ -31,21 +31,22 @@ StatorChord=0.75
 StatorThickness=0.075
 NumberOfStatorVanes=13
 NumberOfCrossSections=10
-#AirfoilFile='testProfile.txt'
+AirfoilFile='testProfile.txt'
 Airfoil=6512
 AirfoilName='test'
 SummaryFile='AreaOptimization'
 XfoilPath=r'C:\Users\psakievich\Desktop\XFOIL6.99\xfoil.exe'
-alphaMin=-2.0
-alphaMax=8.0
-alphaInc=0.5
+alphaMin=-3.0
+alphaMax=1.0
+alphaInc=0.50
 '''
 ------------------------------------------------------------------------------
 USER INPUT END
 ------------------------------------------------------------------------------
 '''
 #Setup profile
-wing=Profiles.NacaGen(Airfoil,AirfoilName)#AxialProfile()
+wing=Profiles.NacaGen(Airfoil,AirfoilName)
+#wing=Profiles.AxialProfile()
 #wing.Read(AirfoilFile)
 #wing.name=AirfoilName
 wing.Shift(-0.5)

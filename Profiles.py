@@ -317,6 +317,8 @@ def NacaGen(NACA,Name,NumPoints=100,PercentRound=0.95):
     profile=AxialProfile()
     profile.name=Name
     profile.points=np.zeros([3,NumPoints])
+#    x_l[nPoints-1]=x_u[0]
+#    y_l[nPoints-1]=y_u[0]
     profile.points[0,:]=np.concatenate([x_u,x_l[1:nPoints-1]])
     profile.points[1,:]=np.concatenate([y_u,y_l[1:nPoints-1]])
     scale=np.max(profile.points[0,:])-np.min(profile.points[0,:])

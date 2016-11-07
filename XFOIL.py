@@ -32,6 +32,12 @@ class XFOIL:
             StdCmd('LOAD '+self.infile)
         else:
             StdCmd('NACA '+str(self.naca))
+        StdCmd('GDES')
+        StdCmd('')
+        StdCmd('')
+        StdCmd('')
+        StdCmd('')
+        StdCmd('PANEL')
         StdCmd('OPER')
         StdCmd('ITER '+str(self.iterations))
         StdCmd('VISC '+str(self.reynolds))
