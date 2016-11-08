@@ -70,7 +70,7 @@ class AxialFan:
         if(self.__dTip>=NP.sqrt(self.__dHub**2+61.0*self.__CFM/self.__RPM)):
             Test[1]=True
         return Test
-    def PrintProperties(self):
+    def PrintProperties(self,name='Not Specified',numberStatorVanes='Not Specified'):
         bTests=self.CheckDimensions()
         r2d=180.0/NP.pi
         print('-'*75)
@@ -78,8 +78,9 @@ class AxialFan:
         print('Coded by: Phil Sakievich')
         print('Last Update: 10/3/2016')
         print('-'*75)
-        print('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nNumProfiles={}'.format( \
-            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,self.__numProfiles))
+        print('Fan name='+str(name))
+        print('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nStatorZb={} \nNumProfiles={}'.format( \
+            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,str(numberStatorVanes),self.__numProfiles))
         print('BPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
         print('vA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))
@@ -111,7 +112,7 @@ class AxialFan:
         if(os.path.isdir('work')==False):
             os.mkdir('work')
         temp=Airfoil.name
-        Airfoil.name='./work/'+temp+str(i)
+        Airfoil.name='./work/'+temp+'_'+str(i)
         Airfoil.WriteXfoil()
         Calc=XF.XFOIL()
         if(xFoilPath is not None):
@@ -122,7 +123,7 @@ class AxialFan:
         Calc.infile=Airfoil.name+'XF'+Airfoil.fileExtension
         Calc.fromFile=True
         Airfoil.name=temp
-        Calc.outfile='./work/AlphaSweep'+str(i)
+        Calc.outfile='./work/'+temp+'Sweep'+str(i)
         if(os.path.isfile(Calc.outfile+Calc.fileExtension)):
             os.remove(Calc.outfile+Calc.fileExtension)
         Calc.RunAlpha(aMin,aMax,inc,True)
@@ -145,7 +146,7 @@ class AxialFan:
         return self.__re.copy()
     def GetRadius(self):
         return self.__r.copy()
-    def WriteProperties(self,fName):
+    def WriteProperties(self,fName,name='Not Specified',numberStatorVanes='Not Specified'):
         f=open(fName,'w')
         bTests=self.CheckDimensions()
         r2d=180.0/NP.pi
@@ -154,8 +155,9 @@ class AxialFan:
         f.write('Coded by: Phil Sakievich\n')
         f.write('Last Update: 10/3/2016\n')
         f.write('-'*75+'\n')
-        f.write('RPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nNumProfiles={}'.format( \
-            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,self.__numProfiles))
+        f.write('Fan name='+str(name))
+        f.write('\nRPM={} \nCFM={} \nSP(inW)={} \nID(in)={} \nOD(in)={} \nzB={} \nStatorZb={} \nNumProfiles={}'.format( \
+            self.__RPM,self.__CFM,self.__SP,self.__dHub,self.__dTip,self.__zB,str(numberStatorVanes),self.__numProfiles))
         f.write('\nBPF(Hz)={:<10.2f}'.format(self.__zB*self.__RPM/60.0))
         f.write('\nvA(ft/min)={:<6.2f} \naA(ft^2)={:<6.4f} \nnu(ft^2/min)={:<6.5e} \nC(ft/min)={}'.format(
             self.__vA,self.__aA,self.__nu,self.__c))

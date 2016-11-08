@@ -17,28 +17,29 @@ from mpl_toolkits.mplot3d import Axes3D
 USER INPUT START
 ------------------------------------------------------------------------------
 '''
+SessionName='FanSet_{}'.format(3)
 RPM=23000.0
 CFM=500
 SP=10.0
 HubDiameter=3.2
 TipDiameter=4.2
-NumberOfBlades=11
-VariableChordLength=False
-FanStatorClearance=0.5
-FanInletDomainLength=0.25
-StatorOutletDomainLength=0.25
-StatorChord=0.75
+NumberOfBlades=21
+VariableChordLength=True
+FanStatorClearance=1.0/8.0
+FanInletDomainLength=0.5
+StatorOutletDomainLength=0.5
+StatorChord=1.0
 StatorThickness=0.075
 NumberOfStatorVanes=13
 NumberOfCrossSections=10
 AirfoilFile='testProfile.txt'
 Airfoil=6512
-AirfoilName='test'
-SummaryFile='AreaOptimization'
+AirfoilName='NACA_'+str(Airfoil)+'_'+SessionName
+SummaryFile='./Summary/'+SessionName
 XfoilPath=r'C:\Users\psakievich\Desktop\XFOIL6.99\xfoil.exe'
-alphaMin=-3.0
-alphaMax=1.0
-alphaInc=0.50
+alphaMin=0.5
+alphaMax=3.00
+alphaInc=0.25
 '''
 ------------------------------------------------------------------------------
 USER INPUT END
@@ -58,10 +59,10 @@ stator.dHub=HubDiameter
 profs=[]
 #Setup turbogrid writer
 writer=TG.Profile()#fan
-writer.fileName='fan'
+writer.fileName='./tgFiles/fan_'+SessionName
 writer.SetPercentages(NumberOfCrossSections)
 writer2=TG.Profile()#stator
-writer2.fileName='stator'
+writer2.fileName='./tgFiles/stator_'+SessionName
 writer2.SetPercentages(NumberOfCrossSections)
 #Declare fan inputs
 me=AF.AxialFan(HubDiameter, \
@@ -95,8 +96,11 @@ for i in range(NumberOfCrossSections):
                 xFoilPath=XfoilPath)
 alpha=me.GetAlpha()
 #Out put Fan results
-me.PrintProperties()
-me.WriteProperties(SummaryFile+'1.txt')
+me.PrintProperties(numberStatorVanes=NumberOfStatorVanes, \
+                       name=AirfoilName)
+if(VariableChordLength==False):
+    me.WriteProperties(SummaryFile+'.txt',numberStatorVanes=NumberOfStatorVanes, \
+                       name=AirfoilName)
 if(VariableChordLength):
     #Adjust chord length for alpha's
     for i in range(NumberOfCrossSections):
@@ -113,11 +117,15 @@ if(VariableChordLength):
 
     #Calculate angle of attack for desired Coefficient of lift
     for i in range(NumberOfCrossSections):
-        me.SetAlpha(profs[i],i,aMin=alphaMin,aMax=alphaMax,inc=alphaInc/2, \
+        MyMin=np.rad2deg(alpha[i])-alphaInc/2*((alphaMax-alphaMin)/alphaInc)
+        MyMax=np.rad2deg(alpha[i])+alphaInc/2*((alphaMax-alphaMin)/alphaInc)
+        me.SetAlpha(profs[i],i,aMin=MyMin,aMax=MyMax,inc=alphaInc/2, \
                     xFoilPath=XfoilPath)
     #Out put Fan results
-    me.PrintProperties()
-    me.WriteProperties(SummaryFile+'2.txt')
+    me.PrintProperties(numberStatorVanes=NumberOfStatorVanes, \
+                       name=AirfoilName)
+    me.WriteProperties(SummaryFile+'.txt',numberStatorVanes=NumberOfStatorVanes, \
+                       name=AirfoilName)
 
 #write results to turbogrid files and plot blade profiles in 
 #cartesian coordinates
