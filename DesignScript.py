@@ -57,6 +57,7 @@ stator.thickness=StatorThickness
 stator.nblades=NumberOfStatorVanes
 stator.dHub=HubDiameter
 profs=[]
+stats=[]
 #Setup turbogrid writer
 writer=TG.Profile()#fan
 writer.fileName='./tgFiles/fan_'+SessionName
@@ -136,27 +137,46 @@ for i in range(NumberOfCrossSections):
     profs[i].Scale(chord[i],chord[i])
     profs[i].Rotate(np.pi-alpha[i]-beta[i])
     profs[i].P2dToC3d(radius[i])
-    stator.BuildStator(delta[i],radius[i])
+    stats.append(stator.Copy())
+    stats[i].BuildStator(delta[i],radius[i])
     writer.AddProfile(profs[i])
-    writer2.AddProfile(stator)
+    writer2.AddProfile(stats[i])
     if(i==0):
-        inPoint=0.25
-        outPoint=0.25
-        writer.WriteHub(profs[i],FanInletDomainLength,FanStatorClearance/2)
-        writer2.WriteHub(stator,FanStatorClearance/2,StatorOutletDomainLength)
-    if(i==9):
-        writer.WriteShroud(profs[i],FanInletDomainLength,FanStatorClearance/2)
-        writer2.WriteShroud(stator,FanStatorClearance/2,StatorOutletDomainLength)
-    pnts=profs[i].points
-    profs[i].points[0]=pnts[0]*np.cos(pnts[1])
-    profs[i].points[1]=pnts[0]*np.sin(pnts[1])
-
+        hubFanCam=writer.WriteHub(profs[i],FanInletDomainLength,FanStatorClearance/2)
+        hubStaCam=writer2.WriteHub(stats[i],FanStatorClearance/2,StatorOutletDomainLength)
+    if(i==NumberOfCrossSections-1):
+#        fanAdjustIn=np.max(profs[i].points[2,:]-profs[0].points[2,:])
+#        fanAdjustOut=np.min(profs[i].points[2,:]-profs[0].points[2,:])
+#        staAdjustIn=np.min(stats[i].points[2,:]-stats[0].points[2,:])
+#        staAdjustOut=np.max(stats[i].points[2,:]-stats[0].points[2,:])
+        fanAdjustIn=0.0
+        fanAdjustOut=0.0
+        staAdjustIn=0.0
+        staAdjustOut=0.0
+        shrFanCam=writer.WriteShroud(profs[i],FanInletDomainLength+fanAdjustIn, \
+                           FanStatorClearance/2-fanAdjustOut)
+        shrStaCam=writer2.WriteShroud(stats[i],FanStatorClearance/2+staAdjustIn, \
+                            StatorOutletDomainLength-staAdjustOut)
+        lenFanCamber=shrFanCam.shape[1]-1
+        lenStaCamber=shrStaCam.shape[1]-1
+        fanAdjustIn=hubFanCam[2,0]-shrFanCam[2,0]
+        fanAdjustOut=hubFanCam[2,lenFanCamber]-shrFanCam[2,lenFanCamber]
+        staAdjustIn=hubStaCam[2,0]-shrStaCam[2,0]
+        staAdjustOut=hubStaCam[2,lenStaCamber]-shrStaCam[2,lenStaCamber]
+        shrFanCam=writer.WriteShroud(profs[i],FanInletDomainLength-fanAdjustIn, \
+                           FanStatorClearance/2+fanAdjustOut)
+        shrStaCam=writer2.WriteShroud(stats[i],FanStatorClearance/2-staAdjustIn, \
+                            StatorOutletDomainLength+staAdjustOut)
 
 def PlotBlade(eliv,azimuth):
     fig=plt.figure()
     ax=fig.add_subplot(111,projection='3d')
     for i in range(NumberOfCrossSections):
-        ax.scatter(profs[i].points[0],profs[i].points[1],profs[i].points[2])
+        #convert to cartesian coordinates
+        temp=profs[i].points
+        temp[0]=profs[i].points[0]*np.cos(profs[i].points[1])
+        temp[1]=profs[i].points[0]*np.sin(profs[i].points[1])
+        ax.scatter(temp[0],temp[1],temp[2])
     ax.view_init(eliv,azimuth)
     plt.show()
     

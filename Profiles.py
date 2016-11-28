@@ -21,14 +21,6 @@ class Profile:
         self.fileExtension='.dat'
         self.chord=1.0
         self.angle=0.0
-    def Copy(self):
-        you=AxialProfile()
-        you.name=self.name
-        you.cartesian=self.cartesian
-        you.points=self.points.copy()
-        you.fileExtension=self.fileExtension
-        you.angle=self.angle
-        return you
     def Write(self):
         f=open(self.name+self.fileExtension,'w')
         def WriteLine(val):
@@ -87,6 +79,14 @@ class AxialProfile(Profile):
     def __init__(self):
         Profile.__init__(self)
         self.name='fan'
+    def Copy(self):
+        you=AxialProfile()
+        you.name=self.name
+        you.cartesian=self.cartesian
+        you.points=self.points.copy()
+        you.fileExtension=self.fileExtension
+        you.angle=self.angle
+        return you
     def Read(self,fName):
         f=open(fName,'r')
         #Get number of points
@@ -138,6 +138,22 @@ class Stator(Profile):
         self.nblades=11
         self.dHub=1.0
         self.SetPointDensity(self.pntsPerFace,self.pntsPerRadi,self.pntsPerTip)
+    def Copy(self):
+        you=Stator()
+        you.name=self.name
+        you.cartesian=self.cartesian
+        you.pntsPerFace=self.pntsPerFace
+        you.pntsPerRadi=self.pntsPerRadi
+        you.pntsPerTip=self.pntsPerTip
+        you.ratio=self.ratio
+        you.shift=self.shift #angle in radians
+        you.thickness=self.thickness
+        you.nblades=self.nblades
+        you.dHub=self.dHub
+        you.points=self.points.copy()
+        you.fileExtension=self.fileExtension
+        you.angle=self.angle
+        return you
     def SetPointDensity(self,PointsPerFace,PointsPerRadi,PointsPerTip):
         self.pntsPerFace=PointsPerFace
         self.pntsPerRadi=PointsPerRadi

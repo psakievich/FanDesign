@@ -5,7 +5,6 @@ TURBOGRID
 @author: psakievich
 """
 import numpy as np
-import Profiles as pf
 class Profile:
     def __init__(self):
         self.fileName='default'
@@ -42,7 +41,7 @@ class Profile:
             k=k+1
         #writedata    
         f=open(self.fileName+syntax+self.__fileExtension,'w')
-        if(type(inPoints)==type(float())):
+        if(type(inPoints)==type(float()) or type(inPoints)==np.float64):
             f.write('{},{},{}\n'.format(camber[0,0],camber[1,0],
                     float(camber[2,0]-inPoints)))
         else:
@@ -51,7 +50,7 @@ class Profile:
                         inPoints[2,i]))
         for i in range(cSize):
             f.write('{},{},{}\n'.format(camber[0,i],camber[1,i],camber[2,i]))
-        if(type(outPoints)==type(float())):
+        if(type(outPoints)==type(float()) or type(outPoints)==np.float64):
             f.write('{},{},{}\n'.format(camber[0,cSize-1],camber[1,cSize-1],
                     float(camber[2,cSize-1]+outPoints)))
         else:
@@ -59,7 +58,8 @@ class Profile:
                 f.write('{},{},{}\n'.format(outPoints[0,i],outPoints[1,i],
                         outPoints[2,i]))
         f.close()
+        return camber
     def WriteHub(self,profile,inPoints,outPoints):
-        self._WriteCap(profile,inPoints,outPoints,'_hub')
+        return self._WriteCap(profile,inPoints,outPoints,'_hub')
     def WriteShroud(self,profile,inPoints,outPoints):
-        self._WriteCap(profile,inPoints,outPoints,'_shroud')
+        return self._WriteCap(profile,inPoints,outPoints,'_shroud')
